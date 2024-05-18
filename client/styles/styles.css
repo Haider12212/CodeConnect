@@ -1,31 +1,68 @@
-.message {
-    padding: 10px 15px;
-    border-radius: 20px;
-    margin: 5px 0;
-    max-width: 70%;
-    word-wrap: break-word;
-}
-
-.right {
-    align-self: flex-end;
-    background-color: #007bff;
-    color: white;
-    text-align: right;
-}
-
-.left {
-    align-self: flex-start;
-    background-color: #28a745;
-    color: white;
-    text-align: left;
-}
-
-.center {
-    text-align: center;
-    color: gray;
+#chatContainer {
+    margin-top: 50px;
 }
 
 #chatBox {
-    display: flex;
-    flex-direction: column;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.message {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 80%;
+}
+
+.message.right {
+    background-color: #d1e7ff;
+    align-self: flex-end;
+}
+
+.message.left {
+    background-color: #d4edda;
+    align-self: flex-start;
+}
+
+.message.center {
+    background-color: #f8f9fa;
+    align-self: center;
+    text-align: center;
+}
+
+.message p {
+    margin: 0;
+}
+
+.message small {
+    display: block;
+}
+
+#fileDropZone {
+    border: 2px dashed #ccc;
+    color: #ccc;
+    text-align: center;
+    padding: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#fileDropZone.dragging {
+    background-color: #f0f0f0;
+    border-color: #aaa;
+    color: #aaa;
+}
+
+#activeUsersDisplay ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#activeUsersDisplay ul li {
+    margin-bottom: 5px;
+    color: #777;
 }
