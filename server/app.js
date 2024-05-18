@@ -1,8 +1,10 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const PORT = 3000 || process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 const server = createServer(app);
@@ -10,25 +12,36 @@ const io = new Server(server, {
   cors: {
     origin: '*',
   },
-
 });
 
-function generateUniqueCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
+// Serve static files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+app.use(express.static(join(__dirname, 'static')));
 
 app.get('/', (req, res) => {
-  res.send('Hello World');
+  res.sendFile(join(__dirname, 'static', 'index.html'));
 });
-
 
 io.on('connection', (socket) => {
   console.log('a user connected', socket.id);
+
+  socket.on('join', (username) => {
+    socket.username = username;
+    io.emit('userJoined', username);
+  });
+
+  socket.on('message', (data) => {
+    io.emit('message', data);
+  });
+
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    if (socket.username) {
+      console.log('user disconnected', socket.username);
+    }
   });
 });
 
-server.listen(3000, () => {
-  console.log(`server running at ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`server running at http://localhost:${PORT}`);
 });

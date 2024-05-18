@@ -1,42 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="node_modules/socket.io-client/dist/socket.io.js"></script>
     <link rel="stylesheet" href="styles/styles.css">
     <title>CodeConnect - A code related chat app.</title>
 </head>
-
 <body>
-    <div class="container">
+    <!-- Username Modal -->
+    <div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usernameModalLabel">Enter Username</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="usernameInput" class="form-control" placeholder="Enter username">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="saveUsername">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Room Interface -->
+    <div class="container" id="chatContainer" style="display:none;">
         <div class="row">
             <div class="col-md-6">
                 <h1>CodeConnect</h1>
-                <p>A code related chat app.</p>
-                <p>Join a room or create a new one.</p>
-                <form action="chat.html">
-                    <div class="form-group
-                    ">
-                        <label for="room">Room</label>
-                        <input type="text" class="form-control" id="room" placeholder="Enter room name">
+                <div id="chatBox" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: scroll;"></div>
+                <form id="messageForm">
+                    <div class="form-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Enter message">
                     </div>
-                    <div class="form-group
-                    ">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" placeholder="Enter username">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Join</button>
+                    <button type="submit" class="btn btn-primary mt-2">Send</button>
                 </form>
             </div>
-         
         </div>
     </div>
 
     <script src="scripts/script.js"></script>
 </body>
-
 </html>

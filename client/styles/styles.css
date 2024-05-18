@@ -1,0 +1,31 @@
+.message {
+    padding: 10px 15px;
+    border-radius: 20px;
+    margin: 5px 0;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+.right {
+    align-self: flex-end;
+    background-color: #007bff;
+    color: white;
+    text-align: right;
+}
+
+.left {
+    align-self: flex-start;
+    background-color: #28a745;
+    color: white;
+    text-align: left;
+}
+
+.center {
+    text-align: center;
+    color: gray;
+}
+
+#chatBox {
+    display: flex;
+    flex-direction: column;
+}
