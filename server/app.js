@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import fs from 'fs'; // Add fs module for file system operations
 import { generateRoomId, rooms, addUserToRoom, removeUserFromRoom, getRoomUsers, getTotalUsers } from './rooms.js';
 import { addUser, removeUser, getUsersInRoom } from './users.js';
 
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('a user connected', socket.id);
 
+
   socket.on('join', ({ username, roomId }) => {
     if (getRoomUsers(roomId).find(user => user.username === username)) {
       socket.emit('error', 'Username already taken in this room');
@@ -45,9 +47,21 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('message', { username, message, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
     });
 
-    socket.on('file', (fileData) => {
-      io.to(roomId).emit('file', { username, fileData, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    socket.on('file', (data) => {
+      const { username } = data;
+      // Sample test data
+      const testData = "This is a test message.";
+      
+      io.to(roomId).emit('file', {
+        username,
+        fileData: testData, // Sending the test data instead of the actual file data
+        fileName: "test.txt", // You can set any filename you like for test purposes
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      });
+      console.log('File sent:', data);
     });
+    
+    
 
     socket.on('disconnect', () => {
       const user = removeUser(socket.id);
@@ -60,20 +74,29 @@ io.on('connection', (socket) => {
   });
 
   // Listen for file meta data from the client
-  socket.on("file-meta", function (data) {
-    socket.in(data.uid).emit("fs-meta", data.metadata);
+  socket.on('file-meta', (data) => {
+    // Emit the metadata to clients in the same room
+    socket.in(data.uid).emit('fs-meta', data.metadata);
+    console.log('Received file meta data:', data.metadata);
   });
-
-  // Listen for the "fs-start" event from the client
-  socket.on("fs-start", function (data) {
-    socket.in(data.uid).emit("fs-share", {});
+  
+  socket.on('fs-start', (data) => {
+    socket.in(data.uid).emit('fs-share', {});
+    console.log('Start file transfer:', data.uid);
   });
-
-  // Listen for the "file-raw" event from the client
-  socket.on("file-raw", function (data) {
-    socket.in(data.uid).emit("fs-share", data.buffer);
+  
+  socket.on('file', (data) => {
+    // Emit the raw file data to clients in the same room
+    socket.in(data.uid).emit('fs-share', data.buffer);
+    console.log('Received file chunk:', data.buffer.length, 'bytes');
   });
-
+  
+  socket.on('file-end', (data) => {
+    // Emit an EOF signal to clients in the same room
+    socket.in(data.uid).emit('fs-share', 'EOF');
+    console.log('File transfer complete:', data.uid);
+  });
+  
   socket.on('createRoom', () => {
     const roomId = generateRoomId();
     socket.emit('roomCreated', roomId);

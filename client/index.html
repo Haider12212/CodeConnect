@@ -71,20 +71,26 @@
                     <!-- Chat messages will be displayed here -->
                 </div>
                 <form id="messageForm" class="position-relative">
-                    <div class="form-group">
-                        <textarea id="messageInput" class="form-control" placeholder="Enter message" rows="3"></textarea>
-                        <button type="submit" class="btn btn-primary mt-2 position-absolute" id="sendButton">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-up">
-                                <line x1="12" y1="19" x2="12" y2="5"></line>
-                                <polyline points="5 12 12 5 19 12"></polyline>
-                            </svg>
-                        </button>
-                    </div>
-                    <input type="file" id="fileInput" class="form-control-file mt-2">
+                    <form id="messageForm" class="position-relative">
+                        <div class="form-group position-relative">
+                            <textarea id="messageInput" class="form-control" placeholder="Enter message" rows="1"></textarea>
+                            <button type="submit" class="btn btn-primary position-absolute" id="sendButton">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </button>
+                            <label for="fileInput" class="btn btn-secondary position-absolute" id="uploadButton">
+                                <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 5.93023V16C17 18.7614 14.7614 21 12 21C9.23858 21 7 18.7614 7 16V6.33333C7 4.49238 8.49238 3 10.3333 3C12.1743 3 13.6667 4.49238 13.6667 6.33333V15.9845C13.6667 16.905 12.9205 17.6512 12 17.6512C11.0795 17.6512 10.3333 16.905 10.3333 15.9845V6.5" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                <input type="file" id="fileInput" class="form-control-file" style="display: none;">
+                            </label>
+                        </div>
+                        <div id="fileNameContainer" class="mt-2"></div>
+
+                    </form>                    
                 </form>
-                <div id="fileDropZone" class="mt-2 border rounded p-3">
-                    Drag and drop files here
-                </div>
                 <div id="activeUsersDisplay" class="mt-3"></div>
             </div>
         </div>
