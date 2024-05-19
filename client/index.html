@@ -50,17 +50,11 @@
         <a class="navbar-brand" href="#">CodeConnect</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <span id="roomIdDisplay"></span>
-                </li>
               
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <span id="totalUsersDisplay" class="nav-link"></span>
-                </li>
-                <li class="nav-item">
-                    <span id="activeUsersDisplay" class="nav-link"></span>
                 </li>
             </ul>
         </div>
@@ -71,16 +65,22 @@
         <div class="row">
             <div class="">
                 <h1>CodeConnect</h1>
+                <h4><span id="roomIdDisplay"></span></h4>
                 <div id="chatHeader" class="mb-3">Active Users:</div>
                 <div id="chatBox" class="border rounded p-3 mb-3" style="height: 300px; overflow-y: scroll;">
                     <!-- Chat messages will be displayed here -->
                 </div>
-                <form id="messageForm">
+                <form id="messageForm" class="position-relative">
                     <div class="form-group">
-                        <input type="text" id="messageInput" class="form-control" placeholder="Enter message">
-                        <input type="file" id="fileInput" class="form-control-file mt-2">
+                        <textarea id="messageInput" class="form-control" placeholder="Enter message" rows="3"></textarea>
+                        <button type="submit" class="btn btn-primary mt-2 position-absolute" id="sendButton">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-up">
+                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                <polyline points="5 12 12 5 19 12"></polyline>
+                            </svg>
+                        </button>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-2">Send</button>
+                    <input type="file" id="fileInput" class="form-control-file mt-2">
                 </form>
                 <div id="fileDropZone" class="mt-2 border rounded p-3">
                     Drag and drop files here

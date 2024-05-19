@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function () {
     const socket = io("http://localhost:3000/");
     let username = '';
     let roomId = '';
@@ -8,7 +8,7 @@ $(document).ready(function() {
     $('#usernameModal').modal('show');
 
     // Save username and proceed to room selection
-    $('#saveUsername').click(function() {
+    $('#saveUsername').click(function () {
         username = $('#usernameInput').val().trim();
         if (username) {
             $('#usernameModal').modal('hide');
@@ -18,7 +18,7 @@ $(document).ready(function() {
     });
 
     // Join existing room
-    $('#joinRoomBtn').click(function() {
+    $('#joinRoomBtn').click(function () {
         roomId = $('#roomIdInput').val().trim();
         if (roomId) {
             joinRoom();
@@ -26,7 +26,7 @@ $(document).ready(function() {
     });
 
     // Create new room
-    $('#createRoomBtn').click(function() {
+    $('#createRoomBtn').click(function () {
         socket.emit('createRoom');
     });
 
@@ -36,7 +36,7 @@ $(document).ready(function() {
     });
 
     // Join room through navbar
-    $('#joinRoom').click(function() {
+    $('#joinRoom').click(function () {
         roomId = $('#roomInput').val().trim();
         if (roomId) {
             joinRoom();
@@ -53,7 +53,7 @@ $(document).ready(function() {
     }
 
     // Handle form submission to send messages
-    $('#messageForm').submit(function(e) {
+    $('#messageForm').submit(function (e) {
         e.preventDefault();
         const message = $('#messageInput').val();
         if (message.trim()) {
@@ -71,34 +71,40 @@ $(document).ready(function() {
             reader.onload = function(e) {
                 const fileName = file.name;
                 const fileData = e.target.result;
-                socket.emit('file', { fileName, fileData });
+                socket.emit('file-meta', { metadata: { filename: fileName, total_buffer_size: fileData.byteLength }, uid: roomId });
+                socket.emit('fs-start', { uid: roomId });
+                const chunkSize = 1024 * 8; // 8 KB
+                for (let i = 0; i < fileData.byteLength; i += chunkSize) {
+                    const buffer = fileData.slice(i, i + chunkSize);
+                    socket.emit('file-raw', { buffer, uid: roomId });
+                }
             };
-            reader.readAsDataURL(file);
+            reader.readAsArrayBuffer(file);
             $('#fileInput').val('');
         }
     });
-
+    
     // Handle drag and drop files
-    $('#fileDropZone').on('dragover', function(e) {
+    $('#fileDropZone').on('dragover', function (e) {
         e.preventDefault();
         e.stopPropagation();
         $(this).addClass('dragging');
     });
 
-    $('#fileDropZone').on('dragleave', function(e) {
+    $('#fileDropZone').on('dragleave', function (e) {
         e.preventDefault();
         e.stopPropagation();
         $(this).removeClass('dragging');
     });
 
-    $('#fileDropZone').on('drop', function(e) {
+    $('#fileDropZone').on('drop', function (e) {
         e.preventDefault();
         e.stopPropagation();
         $(this).removeClass('dragging');
         const file = e.originalEvent.dataTransfer.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const fileName = file.name;
                 const fileData = e.target.result;
                 socket.emit('file', { fileName, fileData });
@@ -107,11 +113,25 @@ $(document).ready(function() {
         }
     });
 
+    // Handle form submission to send messages
+    $('#messageInput').keypress(function (e) {
+        if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            const message = $(this).val();
+            if (message.trim()) {
+                socket.emit('message', message);
+                $(this).val('');
+                appendMessage('You', message, 'right', 'blue', new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            }
+        }
+    });
+
     // Append messages to the chat box
     function appendMessage(username, message, position, color, time) {
+        const sender = (username === 'You') ? 'You' : username;
         const messageElement = `
             <div class="message ${position} ${color}">
-                <strong>${username}</strong>
+                <strong>${sender}</strong>
                 <p>${message}</p>
                 <small class="text-muted">${time}</small>
             </div>`;

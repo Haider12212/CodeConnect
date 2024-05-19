@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
       socket.emit('error', 'Username already taken in this room');
       return;
     }
-    
+
     const user = addUser({ id: socket.id, username, roomId });
     socket.join(roomId);
     addUserToRoom(roomId, user);
@@ -57,6 +57,21 @@ io.on('connection', (socket) => {
         io.emit('updateUserCount', getTotalUsers());
       }
     });
+  });
+
+  // Listen for file meta data from the client
+  socket.on("file-meta", function (data) {
+    socket.in(data.uid).emit("fs-meta", data.metadata);
+  });
+
+  // Listen for the "fs-start" event from the client
+  socket.on("fs-start", function (data) {
+    socket.in(data.uid).emit("fs-share", {});
+  });
+
+  // Listen for the "file-raw" event from the client
+  socket.on("file-raw", function (data) {
+    socket.in(data.uid).emit("fs-share", data.buffer);
   });
 
   socket.on('createRoom', () => {
