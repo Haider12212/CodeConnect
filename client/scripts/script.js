@@ -2,6 +2,7 @@ $(document).ready(function () {
     const socket = io("http://localhost:3000/");
     let username = '';
     let roomId = '';
+    let fileTimeout;
 
     // Show the username modal on page load
     $('#usernameModal').modal({ backdrop: 'static', keyboard: false });
@@ -64,52 +65,72 @@ $(document).ready(function () {
     });
 
     // Handle file submission
-    $('#fileInput').change(function(e) {
-        const file = e.target.files[0];
+    $('#fileInput').change(function (e) {
+        e.preventDefault();
+        const file = $(this).prop('files')[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (event) {
+                const fileData = event.target.result;
                 const fileName = file.name;
-                const fileData = e.target.result;
-                socket.emit('file-meta', { metadata: { filename: fileName, total_buffer_size: fileData.byteLength }, uid: roomId });
-                socket.emit('fs-start', { uid: roomId });
+                log('Uploading file: ' + fileName);
+
+                // Send file metadata
+                socket.emit('file-meta', {
+                    metadata: {
+                        filename: fileName,
+                        total_buffer_size: fileData.byteLength
+                    },
+                    uid: roomId
+                });
+                socket.emit('fs-start', {
+                    uid: roomId
+                });
+
                 const chunkSize = 1024 * 8; // 8 KB
-                for (let i = 0; i < fileData.byteLength; i += chunkSize) {
-                    const buffer = fileData.slice(i, i + chunkSize);
-                    socket.emit('file-raw', { buffer, uid: roomId });
+                let offset = 0;
+                let progressBar = $('#fileUploadProgress');
+                progressBar.attr('max', fileData.byteLength);
+                progressBar.val(0);
+
+                function sendChunk() {
+                    if (offset < fileData.byteLength) {
+                        const chunk = fileData.slice(offset, offset + chunkSize);
+                        socket.emit('file-raw', {
+                            buffer: chunk,
+                            uid: roomId
+                        });
+                        offset += chunkSize;
+                        progressBar.val(offset);
+                        setTimeout(sendChunk, 0); // Schedule next chunk
+                    } else {
+                        socket.emit('file-end', {
+                            uid: roomId
+                        });
+                        log('File upload complete: ' + fileName);
+
+                        // Enable sending messages after file upload
+                        $('#messageInput').prop('disabled', false);
+                        $('#sendMessageBtn').prop('disabled', false);
+                    }
                 }
+
+                sendChunk(); // Start sending chunks
             };
+
             reader.readAsArrayBuffer(file);
-            $('#fileInput').val('');
-        }
-    });
 
-    // Handle drag and drop files
-    $('#fileDropZone').on('dragover', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(this).addClass('dragging');
-    });
+            // Clear the file input
+            $(this).val('');
 
-    $('#fileDropZone').on('dragleave', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(this).removeClass('dragging');
-    });
+            // Display the file name
+            $('#fileNameContainer').empty(); // Clear previous file name if any
+            const fileNameElement = $('<p></p>').text(file.name);
+            $('#fileNameContainer').append(fileNameElement);
 
-    $('#fileDropZone').on('drop', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(this).removeClass('dragging');
-        const file = e.originalEvent.dataTransfer.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const fileName = file.name;
-                const fileData = e.target.result;
-                socket.emit('file', { fileName, fileData });
-            };
-            reader.readAsDataURL(file);
+            // Disable sending messages until file upload completes
+            $('#messageInput').prop('disabled', true);
+            $('#sendMessageBtn').prop('disabled', true);
         }
     });
 
@@ -130,11 +151,11 @@ $(document).ready(function () {
     function appendMessage(username, message, position, color, time) {
         const sender = (username === 'You') ? 'You' : username;
         const messageElement = `
-            <div class="message ${position} ${color}">
-                <strong>${sender}</strong>
-                <div>${message}</div>
-                <small class="text-muted">${time}</small>
-            </div>`;
+                <div class="message ${position} ${color}">
+                    <strong>${sender}</strong>
+                    <div>${message}</div>
+                    <small class="text-muted">${time}</small>
+                </div>`;
         $('#chatBox').append(messageElement);
         $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
     }
@@ -143,26 +164,29 @@ $(document).ready(function () {
     socket.on('message', (data) => {
         if (data.username !== username) {
             appendMessage(data.username, data.message, 'left', 'green', data.time);
+            console.log('received message:', data.message);
         }
     });
+    // Client-side code
+// Assuming you're using Socket.IO on the client side
 
-    // Listen for files from the server
-    socket.on('file', (data) => {
-        if (data.username !== username) {
-            const downloadLink = document.createElement('a');
-            downloadLink.href = data.fileData;
-            downloadLink.download = data.fileName;
-            downloadLink.innerText = `Download ${data.fileName}`;
-            const messageElement = `
-                <div class="message left green">
-                    <strong>${data.username}</strong>
-                    <p>${downloadLink.outerHTML}</p>
-                    <small class="text-muted">${data.time}</small>
-                </div>`;
-            $('#chatBox').append(messageElement);
-            $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
-        }
-    });
+socket.on('file', (data) => {
+    const { username, fileData, fileName, time } = data;
+  
+    // Check if the file is from the current user, if so, ignore it
+    if (username === 'current_username') {
+      return;
+    } else {
+      console.log('Received file:', fileName, fileData, time);
+      
+      // Example: Display the file content in a <div>
+      const fileContentDiv = document.getElementById('fileContent');
+      fileContentDiv.innerHTML += `<p><strong>${username}</strong> sent a file (${fileName}) at ${time}</p>`;
+      fileContentDiv.innerHTML += `<pre>${fileData}</pre>`;
+    }
+  });
+  
+
 
     // Listen for user join notifications
     socket.on('userJoined', ({ username, users }) => {
@@ -187,4 +211,9 @@ $(document).ready(function () {
     socket.on('updateUserCount', (totalUsers) => {
         $('#totalUsersDisplay').text(`Total Users Online: ${totalUsers}`);
     });
+
+    // Log function for debugging
+    function log(message) {
+        console.log(message);
+    }
 });
