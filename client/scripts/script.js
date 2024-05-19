@@ -83,7 +83,7 @@ $(document).ready(function () {
             $('#fileInput').val('');
         }
     });
-    
+
     // Handle drag and drop files
     $('#fileDropZone').on('dragover', function (e) {
         e.preventDefault();
@@ -132,7 +132,7 @@ $(document).ready(function () {
         const messageElement = `
             <div class="message ${position} ${color}">
                 <strong>${sender}</strong>
-                <p>${message}</p>
+                <div>${message}</div>
                 <small class="text-muted">${time}</small>
             </div>`;
         $('#chatBox').append(messageElement);

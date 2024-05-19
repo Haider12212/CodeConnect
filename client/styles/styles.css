@@ -18,6 +18,10 @@
     border-radius: 10px;
     margin-bottom: 10px;
     max-width: 50%;
+
+}
+.message div{
+    white-space: pre-line;
 }
 
 .message.right {
