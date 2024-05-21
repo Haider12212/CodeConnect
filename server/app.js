@@ -29,7 +29,6 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('a user connected', socket.id);
 
-
   socket.on('join', ({ username, roomId }) => {
     if (getRoomUsers(roomId).find(user => user.username === username)) {
       socket.emit('error', 'Username already taken in this room');
@@ -47,21 +46,19 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('message', { username, message, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
     });
 
+    // Listen for file data from the client
     socket.on('file', (data) => {
-      const { username } = data;
-      // Sample test data
-      const testData = "This is a test message.";
+      const { username, fileData, fileName } = data;
       
+      // Emit the file data to clients in the same room
       io.to(roomId).emit('file', {
         username,
-        fileData: testData, // Sending the test data instead of the actual file data
-        fileName: "test.txt", // You can set any filename you like for test purposes
+        fileData,
+        fileName,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       });
-      console.log('File sent:', data);
+      console.log('File sent:', fileName);
     });
-    
-    
 
     socket.on('disconnect', () => {
       const user = removeUser(socket.id);
@@ -73,30 +70,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Listen for file meta data from the client
-  socket.on('file-meta', (data) => {
-    // Emit the metadata to clients in the same room
-    socket.in(data.uid).emit('fs-meta', data.metadata);
-    console.log('Received file meta data:', data.metadata);
-  });
-  
-  socket.on('fs-start', (data) => {
-    socket.in(data.uid).emit('fs-share', {});
-    console.log('Start file transfer:', data.uid);
-  });
-  
-  socket.on('file', (data) => {
-    // Emit the raw file data to clients in the same room
-    socket.in(data.uid).emit('fs-share', data.buffer);
-    console.log('Received file chunk:', data.buffer.length, 'bytes');
-  });
-  
-  socket.on('file-end', (data) => {
-    // Emit an EOF signal to clients in the same room
-    socket.in(data.uid).emit('fs-share', 'EOF');
-    console.log('File transfer complete:', data.uid);
-  });
-  
   socket.on('createRoom', () => {
     const roomId = generateRoomId();
     socket.emit('roomCreated', roomId);
