@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const socket = io("http://localhost:3000/");
+    const socket = io("https://code-connect-server-8115bdc4c592.herokuapp.com");
     let username = '';
     let roomId = '';
     let fileTimeout;
