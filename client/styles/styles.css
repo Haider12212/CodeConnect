@@ -163,3 +163,25 @@
     padding-top: 0.5rem;
     padding-left: 0.5rem;
 }
+.copy-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    color: #3b5688; /* Adjust color as needed */
+}
+.message {
+    position: relative;
+    padding-right: 20px; /* Adjust padding to accommodate the icon */
+}
+
+.copied-message {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #0000005d;
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+}
